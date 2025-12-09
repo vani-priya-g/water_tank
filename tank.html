@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h3>Enter Heights (example: 0,4,0,0,0,6,0,6,4,0)</h3>
+<input id="arrInput" style="width:300px;">
+<button onclick="run()">Show</button>
+<h3>Input Table (No Water)</h3>
+<div id="inputTable"></div>
+<h3>Water Output</h3>
+<div id="waterList"></div>
+<div id="waterTotal"></div>
+<h3>Output Table (With Water)</h3>
+<div id="outputTable"></div>
+<script>
+function getArray(text) {
+    let parts = text.split(",");
+    let arr = [];
+    for (let i = 0; i < parts.length; i++) {
+        arr.push(parseInt(parts[i]) || 0);
+    }
+    return arr;
+}
+function computeWater(arr) {
+    let n = arr.length;
+    let leftMax = [];
+    let rightMax = [];
+    let water = [];
+    let total = 0;
+    leftMax[0] = arr[0];
+    for (let i = 1; i < n; i++) {
+        leftMax[i] = Math.max(leftMax[i - 1], arr[i]);
+    }
+    rightMax[n - 1] = arr[n - 1];
+    for (let i = n - 2; i >= 0; i--) {
+        rightMax[i] = Math.max(rightMax[i + 1], arr[i]);
+    }
+    for (let i = 0; i < n; i++) {
+        let w = Math.min(leftMax[i], rightMax[i]) - arr[i];
+        if (w < 0) w = 0;
+        water[i] = w;
+        total += w;
+    }
+    return { water, total };
+}
+function createTable(arr, waterArr, showWater) {
+    let maxH = 0;
+    for (let i = 0; i < arr.length; i++) {
+        let h = arr[i] + (showWater ? waterArr[i] : 0);
+        if (h > maxH) maxH = h;
+    }
+    let html = "<table border='1' cellpadding='5'>";
+    for (let level = maxH; level >= 1; level--) {
+        html += "<tr>";
+        for (let i = 0; i < arr.length; i++) {
+            if (arr[i] >= level) {
+                html += "<td>█</td>";
+            }
+            else if (showWater && arr[i] + waterArr[i] >= level) {
+                html += "<td>~</td>";
+            }
+            else {
+                html += "<td></td>";
+            }
+        }
+        html += "</tr>";
+    }
+    html += "</table>";
+    return html;
+}
+function run() {
+    let arr = getArray(document.getElementById("arrInput").value);
+    let result = computeWater(arr);
+
+    document.getElementById("inputTable").innerHTML =
+        createTable(arr, result.water, false);
+
+    document.getElementById("waterList").innerText =
+        "Water per index: " + result.water.join(", ");
+
+    document.getElementById("waterTotal").innerText =
+        "Total Water: " + result.total;
+
+    document.getElementById("outputTable").innerHTML =
+        createTable(arr, result.water, true);
+}
+</script>
+</body>
+</html>
